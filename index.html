@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Practice Tracker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1em;
+            color: #495057;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #2193b0;
+            border-bottom: 3px solid #2193b0;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .card h2 {
+            color: #2193b0;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .stat-card.green {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .stat-card.orange {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card.blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2193b0;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 147, 176, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .procedure-list {
+            list-style: none;
+        }
+
+        .procedure-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .procedure-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .procedure-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .entry-list {
+            margin-top: 20px;
+        }
+
+        .entry-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 4px solid #2193b0;
+        }
+
+        .progress-bar-container {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th,
+        table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        table th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .nav-tab {
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+        }
+
+        .icon {
+            margin-right: 8px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-tooth"></i> Dental Practice Tracker</h1>
+            <p>Professional Statistics & Earnings Management System</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('dashboard')">
+                <i class="fas fa-chart-line icon"></i>Dashboard
+            </button>
+            <button class="nav-tab" onclick="switchTab('daily-entry')">
+                <i class="fas fa-calendar-plus icon"></i>Daily Entry
+            </button>
+            <button class="nav-tab" onclick="switchTab('procedures')">
+                <i class="fas fa-list icon"></i>Procedures
+            </button>
+            <button class="nav-tab" onclick="switchTab('targets')">
+                <i class="fas fa-bullseye icon"></i>Targets
+            </button>
+            <button class="nav-tab" onclick="switchTab('statistics')">
+                <i class="fas fa-chart-bar icon"></i>Statistics
+            </button>
+            <button class="nav-tab" onclick="switchTab('reports')">
+                <i class="fas fa-file-alt icon"></i>Reports
+            </button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3><i class="fas fa-file-invoice-dollar"></i> Today's Billed</h3>
+                    <div class="value" id="todayRevenue">R0.00</div>
+                </div>
+                <div class="stat-card green">
+                    <h3><i class="fas fa-money-bill-wave"></i> Today's Received</h3>
+                    <div class="value" id="todayReceived">R0.00</div>
+                </div>
+                <div class="stat-card orange">
+                    <h3><i class="fas fa-chart-line"></i> Monthly Billed</h3>
+                    <div class="value" id="monthlyRevenue">R0.00</div>
+                </div>
+                <div class="stat-card blue">
+                    <h3><i class="fas fa-hand-holding-usd"></i> Monthly Received</h3>
+                    <div class="value" id="monthlyReceived">R0.00</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-bullseye"></i> Target Progress</h2>
+                <div style="margin-bottom: 20px;">
+                    <strong>Daily Target: <span id="dailyTargetDisplay">R0.00</span></strong>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="dailyProgress" style="width: 0%">0%</div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <strong>Weekly Target: <span id="weeklyTargetDisplay">R0.00</span></strong>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="weeklyProgress" style="width: 0%">0%</div>
+                    </div>
+                </div>
+                <div>
+                    <strong>Monthly Target: <span id="monthlyTargetDisplay">R0.00</span></strong>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="monthlyProgress" style="width: 0%">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="card">
+                    <h2><i class="fas fa-chart-pie"></i> Revenue Trend</h2>
+                    <div class="chart-container">
+                        <canvas id="revenueTrendChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2><i class="fas fa-chart-bar"></i> Top Procedures</h2>
+                    <div class="chart-container">
+                        <canvas id="topProceduresChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Entry Tab -->
+        <div id="daily-entry" class="tab-content">
+            <div class="two-col">
+                <div class="card">
+                    <h2><i class="fas fa-calendar-plus"></i> Add Procedure Entry</h2>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="entryDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>Procedure</label>
+                        <select id="entryProcedure">
+                            <option value="">Select a procedure</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" id="entryQuantity" value="1" min="1" />
+                    </div>
+                    <button class="btn btn-primary" onclick="addEntry()">
+                        <i class="fas fa-plus"></i> Add Entry
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-money-bill-wave"></i> Daily Totals</h2>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="totalsDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>Total Billed (R)</label>
+                        <input type="number" id="entryTotalBilled" placeholder="0.00" step="0.01" min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label>Total Received (R)</label>
+                        <input type="number" id="entryTotalReceived" placeholder="0.00" step="0.01" min="0" />
+                    </div>
+                    <button class="btn btn-success" onclick="saveDailyTotals()">
+                        <i class="fas fa-save"></i> Save Totals
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-list"></i> Today's Entries</h2>
+                <div id="todayEntries" class="entry-list"></div>
+            </div>
+        </div>
+
+        <!-- Procedures Tab -->
+        <div id="procedures" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-plus-circle"></i> Add New Procedure</h2>
+                <div class="form-group">
+                    <label>Procedure Name</label>
+                    <input type="text" id="newProcedureName" placeholder="Enter procedure name" />
+                </div>
+                <button class="btn btn-success" onclick="addProcedure()">
+                    <i class="fas fa-plus"></i> Add Procedure
+                </button>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-list"></i> Procedure List</h2>
+                <ul class="procedure-list" id="procedureList"></ul>
+            </div>
+        </div>
+
+        <!-- Targets Tab -->
+        <div id="targets" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-bullseye"></i> Set Monthly Target</h2>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Set your monthly revenue target. Daily and weekly targets will be calculated automatically.
+                </div>
+                <div class="form-group">
+                    <label>Monthly Revenue Target (R)</label>
+                    <input type="number" id="monthlyTarget" placeholder="0.00" step="100" />
+                </div>
+                <button class="btn btn-primary" onclick="saveTarget()">
+                    <i class="fas fa-save"></i> Save Target
+                </button>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-calculator"></i> Target Breakdown</h2>
+                <table>
+                    <tr>
+                        <th>Period</th>
+                        <th>Target</th>
+                        <th>Current</th>
+                        <th>Progress</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Daily</strong> (Monthly ÷ 22 days)</td>
+                        <td id="targetDaily">R0.00</td>
+                        <td id="currentDaily">R0.00</td>
+                        <td><span id="badgeDaily" class="badge">0%</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Weekly</strong> (Monthly ÷ 4.33 weeks)</td>
+                        <td id="targetWeekly">R0.00</td>
+                        <td id="currentWeekly">R0.00</td>
+                        <td><span id="badgeWeekly" class="badge">0%</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Monthly</strong></td>
+                        <td id="targetMonthly">R0.00</td>
+                        <td id="currentMonthly">R0.00</td>
+                        <td><span id="badgeMonthly" class="badge">0%</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Statistics Tab -->
+        <div id="statistics" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3><i class="fas fa-money-bill-wave"></i> Total Turnover</h3>
+                    <div class="value" id="totalTurnover">R0.00</div>
+                </div>
+                <div class="stat-card green">
+                    <h3><i class="fas fa-hand-holding-usd"></i> Total Earnings (40%)</h3>
+                    <div class="value" id="totalEarnings">R0.00</div>
+                </div>
+                <div class="stat-card orange">
+                    <h3><i class="fas fa-procedures"></i> Total Procedures</h3>
+                    <div class="value" id="totalProcedures">0</div>
+                </div>
+                <div class="stat-card blue">
+                    <h3><i class="fas fa-calendar-check"></i> Days Tracked</h3>
+                    <div class="value" id="daysTracked">0</div>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="card">
+                    <h2><i class="fas fa-trophy"></i> Most Profitable Procedures</h2>
+                    <table id="profitableTable">
+                        <thead>
+                            <tr>
+                                <th>Procedure</th>
+                                <th>Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-star"></i> Most Frequent Procedures</h2>
+                    <table id="frequentTable">
+                        <thead>
+                            <tr>
+                                <th>Procedure</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-chart-pie"></i> Procedure Distribution</h2>
+                <div class="chart-container">
+                    <canvas id="procedureDistChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-chart-line"></i> Monthly Comparison</h2>
+                <div class="chart-container">
+                    <canvas id="monthlyComparisonChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-download"></i> Data Management</h2>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="exportData()">
+                        <i class="fas fa-download"></i> Export Data (JSON)
+                    </button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
+                        <i class="fas fa-upload"></i> Import Data
+                    </button>
+                    <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importData(event)" />
+                    <button class="btn btn-danger" onclick="clearAllData()">
+                        <i class="fas fa-trash"></i> Clear All Data
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-table"></i> All Entries</h2>
+                <table id="allEntriesTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Procedure</th>
+                            <th>Amount</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize default procedures
+        const defaultProcedures = [
+            'Scale and polish',
+            'General checkup',
+            'PAN xray',
+            'Bitewing xray',
+            'PA xray',
+            'Filling small',
+            'Filling large',
+            'Root canal anterior',
+            'Root canal posterior',
+            'Crown anterior',
+            'Crown posterior',
+            'Inlay',
+            'Onlay',
+            'Bite plate',
+            'Partial denture acrylic',
+            'Partial denture chrome',
+            'Full denture',
+            'Extraction'
+        ];
+
+        // Initialize data structure
+        let appData = {
+            procedures: [],
+            entries: [],
+            dailyTotals: {},
+            monthlyTarget: 0
+        };
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('dentalTrackerData');
+            if (saved) {
+                appData = JSON.parse(saved);
+            } else {
+                appData.procedures = [...defaultProcedures];
+                saveData();
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('dentalTrackerData', JSON.stringify(appData));
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return 'R' + parseFloat(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'dashboard') updateDashboard();
+            if (tabName === 'daily-entry') updateDailyEntry();
+            if (tabName === 'procedures') updateProcedureList();
+            if (tabName === 'targets') updateTargets();
+            if (tabName === 'statistics') updateStatistics();
+            if (tabName === 'reports') updateReports();
+        }
+
+        // Add procedure
+        function addProcedure() {
+            const name = document.getElementById('newProcedureName').value.trim();
+            if (!name) {
+                alert('Please enter a procedure name');
+                return;
+            }
+            if (appData.procedures.includes(name)) {
+                alert('This procedure already exists');
+                return;
+            }
+            appData.procedures.push(name);
+            saveData();
+            document.getElementById('newProcedureName').value = '';
+            updateProcedureList();
+            updateProcedureDropdown();
+        }
+
+        // Delete procedure
+        function deleteProcedure(name) {
+            if (confirm(`Are you sure you want to delete "${name}"?`)) {
+                appData.procedures = appData.procedures.filter(p => p !== name);
+                saveData();
+                updateProcedureList();
+                updateProcedureDropdown();
+            }
+        }
+
+        // Update procedure list
+        function updateProcedureList() {
+            const list = document.getElementById('procedureList');
+            list.innerHTML = '';
+            appData.procedures.forEach(proc => {
+                const li = document.createElement('li');
+                li.className = 'procedure-item';
+                li.innerHTML = `
+                    <span><i class="fas fa-tooth"></i> ${proc}</span>
+                    <div class="procedure-actions">
+                        <button class="btn btn-danger" onclick="deleteProcedure('${proc}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        // Update procedure dropdown
+        function updateProcedureDropdown() {
+            const select = document.getElementById('entryProcedure');
+            select.innerHTML = '<option value="">Select a procedure</option>';
+            appData.procedures.forEach(proc => {
+                const option = document.createElement('option');
+                option.value = proc;
+                option.textContent = proc;
+                select.appendChild(option);
+            });
+        }
+
+        // Add entry
+        function addEntry() {
+            const date = document.getElementById('entryDate').value;
+            const procedure = document.getElementById('entryProcedure').value;
+            const quantity = parseInt(document.getElementById('entryQuantity').value);
+
+            if (!date || !procedure || !quantity) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const entry = {
+                id: Date.now(),
+                date,
+                procedure,
+                quantity
+            };
+
+            appData.entries.push(entry);
+            saveData();
+
+            // Reset form
+            document.getElementById('entryQuantity').value = '1';
+            document.getElementById('entryProcedure').value = '';
+
+            updateDailyEntry();
+            updateDashboard();
+        }
+
+        // Save daily totals
+        function saveDailyTotals() {
+            const date = document.getElementById('totalsDate').value;
+            const totalBilled = parseFloat(document.getElementById('entryTotalBilled').value) || 0;
+            const totalReceived = parseFloat(document.getElementById('entryTotalReceived').value) || 0;
+
+            if (!date) {
+                alert('Please select a date');
+                return;
+            }
+
+            appData.dailyTotals[date] = {
+                totalBilled,
+                totalReceived
+            };
+
+            saveData();
+
+            // Reset form
+            document.getElementById('entryTotalBilled').value = '';
+            document.getElementById('entryTotalReceived').value = '';
+
+            alert('Daily totals saved successfully!');
+            updateDailyEntry();
+            updateDashboard();
+        }
+
+        // Delete entry
+        function deleteEntry(id) {
+            if (confirm('Are you sure you want to delete this entry?')) {
+                appData.entries = appData.entries.filter(e => e.id !== id);
+                saveData();
+                updateDailyEntry();
+                updateDashboard();
+                updateReports();
+            }
+        }
+
+        // Update daily entry view
+        function updateDailyEntry() {
+            const today = document.getElementById('entryDate').value;
+            const todayEntries = appData.entries.filter(e => e.date === today);
+            const container = document.getElementById('todayEntries');
+
+            if (todayEntries.length === 0) {
+                container.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 20px;">No entries for this date</p>';
+                return;
+            }
+
+            // Calculate totals for the day
+            const dayTotalBilled = todayEntries.reduce((sum, e) => sum + (e.totalBilled || 0), 0);
+            const dayTotalReceived = todayEntries.reduce((sum, e) => sum + (e.totalReceived || 0), 0);
+
+            container.innerHTML = `
+                <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <strong>Total Billed:</strong>
+                        <strong style="color: #2193b0;">${formatCurrency(dayTotalBilled)}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Total Received:</strong>
+                        <strong style="color: #28a745;">${formatCurrency(dayTotalReceived)}</strong>
+                    </div>
+                </div>
+            `;
+            
+            todayEntries.forEach(entry => {
+                const div = document.createElement('div');
+                div.className = 'entry-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${entry.procedure}</strong><br>
+                        <small>Quantity: ${entry.quantity} | Billed: ${formatCurrency(entry.totalBilled || 0)} | Received: ${formatCurrency(entry.totalReceived || 0)}</small>
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteEntry(${entry.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Save target
+        function saveTarget() {
+            const target = parseFloat(document.getElementById('monthlyTarget').value);
+            if (!target || target <= 0) {
+                alert('Please enter a valid target amount');
+                return;
+            }
+            appData.monthlyTarget = target;
+            saveData();
+            updateTargets();
+            updateDashboard();
+            alert('Target saved successfully!');
+        }
+
+        // Update targets view
+        function updateTargets() {
+            document.getElementById('monthlyTarget').value = appData.monthlyTarget;
+
+            const dailyTarget = appData.monthlyTarget / 22;
+            const weeklyTarget = appData.monthlyTarget / 4.33;
+
+            // Get current values from dailyTotals
+            const today = new Date().toISOString().split('T')[0];
+            const todayTotals = appData.dailyTotals[today] || { totalBilled: 0, totalReceived: 0 };
+            const todayBilled = todayTotals.totalBilled;
+
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            let monthlyBilled = 0;
+            Object.keys(appData.dailyTotals).forEach(date => {
+                if (date.startsWith(currentMonth)) {
+                    monthlyBilled += appData.dailyTotals[date].totalBilled || 0;
+                }
+            });
+
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            const weekStartStr = weekStart.toISOString().split('T')[0];
+            let weeklyBilled = 0;
+            Object.keys(appData.dailyTotals).forEach(date => {
+                if (date >= weekStartStr) {
+                    weeklyBilled += appData.dailyTotals[date].totalBilled || 0;
+                }
+            });
+
+            // Update table
+            document.getElementById('targetDaily').textContent = formatCurrency(dailyTarget);
+            document.getElementById('currentDaily').textContent = formatCurrency(todayBilled);
+            document.getElementById('targetWeekly').textContent = formatCurrency(weeklyTarget);
+            document.getElementById('currentWeekly').textContent = formatCurrency(weeklyBilled);
+            document.getElementById('targetMonthly').textContent = formatCurrency(appData.monthlyTarget);
+            document.getElementById('currentMonthly').textContent = formatCurrency(monthlyBilled);
+
+            // Update badges
+            updateBadge('badgeDaily', todayBilled, dailyTarget);
+            updateBadge('badgeWeekly', weeklyBilled, weeklyTarget);
+            updateBadge('badgeMonthly', monthlyBilled, appData.monthlyTarget);
+        }
+
+        function updateBadge(id, current, target) {
+            const badge = document.getElementById(id);
+            const percent = target > 0 ? (current / target * 100).toFixed(0) : 0;
+            badge.textContent = percent + '%';
+            badge.className = 'badge';
+            if (percent >= 100) badge.classList.add('badge-success');
+            else if (percent >= 70) badge.classList.add('badge-warning');
+            else badge.classList.add('badge-danger');
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            const today = new Date().toISOString().split('T')[0];
+            const currentMonth = new Date().toISOString().slice(0, 7);
+
+            // Get today's totals from dailyTotals
+            const todayTotals = appData.dailyTotals[today] || { totalBilled: 0, totalReceived: 0 };
+            const todayBilled = todayTotals.totalBilled;
+            const todayReceived = todayTotals.totalReceived;
+
+            // Calculate monthly totals from dailyTotals
+            let monthlyBilled = 0;
+            let monthlyReceived = 0;
+            Object.keys(appData.dailyTotals).forEach(date => {
+                if (date.startsWith(currentMonth)) {
+                    monthlyBilled += appData.dailyTotals[date].totalBilled || 0;
+                    monthlyReceived += appData.dailyTotals[date].totalReceived || 0;
+                }
+            });
+
+            document.getElementById('todayRevenue').textContent = formatCurrency(todayBilled);
+            document.getElementById('todayReceived').textContent = formatCurrency(todayReceived);
+            document.getElementById('monthlyRevenue').textContent = formatCurrency(monthlyBilled);
+            document.getElementById('monthlyReceived').textContent = formatCurrency(monthlyReceived);
+
+            // Update progress bars (based on billed amounts)
+            const dailyTarget = appData.monthlyTarget / 22;
+            const weeklyTarget = appData.monthlyTarget / 4.33;
+
+            // Calculate weekly billed
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            const weekStartStr = weekStart.toISOString().split('T')[0];
+            let weeklyBilled = 0;
+            Object.keys(appData.dailyTotals).forEach(date => {
+                if (date >= weekStartStr) {
+                    weeklyBilled += appData.dailyTotals[date].totalBilled || 0;
+                }
+            });
+
+            updateProgressBar('dailyProgress', todayBilled, dailyTarget);
+            updateProgressBar('weeklyProgress', weeklyBilled, weeklyTarget);
+            updateProgressBar('monthlyProgress', monthlyBilled, appData.monthlyTarget);
+
+            document.getElementById('dailyTargetDisplay').textContent = formatCurrency(dailyTarget);
+            document.getElementById('weeklyTargetDisplay').textContent = formatCurrency(weeklyTarget);
+            document.getElementById('monthlyTargetDisplay').textContent = formatCurrency(appData.monthlyTarget);
+
+            // Update charts
+            updateRevenueTrendChart();
+            updateTopProceduresChart();
+        }
+
+        function updateProgressBar(id, current, target) {
+            const bar = document.getElementById(id);
+            const percent = target > 0 ? Math.min((current / target * 100), 100) : 0;
+            bar.style.width = percent + '%';
+            bar.textContent = percent.toFixed(0) + '%';
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            // Calculate total billed and received from dailyTotals
+            let totalBilled = 0;
+            let totalReceived = 0;
+            Object.keys(appData.dailyTotals).forEach(date => {
+                totalBilled += appData.dailyTotals[date].totalBilled || 0;
+                totalReceived += appData.dailyTotals[date].totalReceived || 0;
+            });
+
+            const totalEarnings = totalReceived * 0.4;
+            const totalProcedures = appData.entries.reduce((sum, e) => sum + e.quantity, 0);
+            const uniqueDates = Object.keys(appData.dailyTotals).length;
+
+            document.getElementById('totalTurnover').textContent = formatCurrency(totalBilled);
+            document.getElementById('totalEarnings').textContent = formatCurrency(totalEarnings);
+            document.getElementById('totalProcedures').textContent = totalProcedures;
+            document.getElementById('daysTracked').textContent = uniqueDates;
+
+            // Most profitable procedures (by quantity since we don't have per-procedure pricing)
+            const frequentMap = {};
+            appData.entries.forEach(e => {
+                frequentMap[e.procedure] = (frequentMap[e.procedure] || 0) + e.quantity;
+            });
+            const profitable = Object.entries(frequentMap)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            const profitableTable = document.getElementById('profitableTable').querySelector('tbody');
+            profitableTable.innerHTML = '';
+            profitable.forEach(([proc, count]) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${proc}</td><td>${count} procedures</td>`;
+                profitableTable.appendChild(tr);
+            });
+
+            // Most frequent procedures
+            const frequentTable = document.getElementById('frequentTable').querySelector('tbody');
+            frequentTable.innerHTML = '';
+            Object.entries(frequentMap)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .forEach(([proc, count]) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${proc}</td><td>${count}</td>`;
+                    frequentTable.appendChild(tr);
+                });
+
+            // Update procedure distribution chart
+            updateProcedureDistChart();
+        }
+
+        // Update reports
+        function updateReports() {
+            updateMonthlyComparisonChart();
+            updateAllEntriesTable();
+        }
+
+        function updateAllEntriesTable() {
+            const tbody = document.getElementById('allEntriesTable').querySelector('tbody');
+            tbody.innerHTML = '';
+
+            const sortedEntries = [...appData.entries].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            sortedEntries.forEach(entry => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${entry.date}</td>
+                    <td>${entry.procedure}</td>
+                    <td>${formatCurrency(entry.amount)}</td>
+                    <td>${entry.quantity}</td>
+                    <td>${formatCurrency(entry.total)}</td>
+                    <td>
+                        <button class="btn btn-danger" onclick="deleteEntry(${entry.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Chart functions
+        let revenueTrendChart, topProceduresChart, procedureDistChart, monthlyComparisonChart;
+
+        function updateRevenueTrendChart() {
+            const ctx = document.getElementById('revenueTrendChart');
+            if (!ctx) return;
+
+            // Get last 30 days
+            const dates = [];
+            const revenues = [];
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                dates.push(date.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' }));
+
+                const dayBilled = appData.dailyTotals[dateStr]?.totalBilled || 0;
+                revenues.push(dayBilled);
+            }
+
+            if (revenueTrendChart) revenueTrendChart.destroy();
+
+            revenueTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Daily Billed',
+                        data: revenues,
+                        borderColor: '#2193b0',
+                        backgroundColor: 'rgba(33, 147, 176, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => 'R' + value.toLocaleString()
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTopProceduresChart() {
+            const ctx = document.getElementById('topProceduresChart');
+            if (!ctx) return;
+
+            const procedureMap = {};
+            appData.entries.forEach(e => {
+                procedureMap[e.procedure] = (procedureMap[e.procedure] || 0) + e.quantity;
+            });
+            const top5 = Object.entries(procedureMap)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            if (topProceduresChart) topProceduresChart.destroy();
+
+            topProceduresChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top5.map(([proc]) => proc),
+                    datasets: [{
+                        label: 'Quantity',
+                        data: top5.map(([, count]) => count),
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#4facfe',
+                            '#43e97b'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => value.toLocaleString()
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateProcedureDistChart() {
+            const ctx = document.getElementById('procedureDistChart');
+            if (!ctx) return;
+
+            const profitableMap = {};
+            appData.entries.forEach(e => {
+                profitableMap[e.procedure] = (profitableMap[e.procedure] || 0) + e.quantity;
+            });
+            const data = Object.entries(profitableMap).sort((a, b) => b[1] - a[1]);
+
+            if (procedureDistChart) procedureDistChart.destroy();
+
+            procedureDistChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(([proc]) => proc),
+                    datasets: [{
+                        data: data.map(([, total]) => total),
+                        backgroundColor: [
+                            '#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b',
+                            '#fa709a', '#fee140', '#30cfd0', '#a8edea', '#fed6e3'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateMonthlyComparisonChart() {
+            const ctx = document.getElementById('monthlyComparisonChart');
+            if (!ctx) return;
+
+            // Get last 6 months
+            const months = [];
+            const revenues = [];
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                const monthStr = date.toISOString().slice(0, 7);
+                months.push(date.toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' }));
+
+                const monthRevenue = appData.entries
+                    .filter(e => e.date.startsWith(monthStr))
+                    .reduce((sum, e) => sum + e.total, 0);
+                revenues.push(monthRevenue);
+            }
+
+            if (monthlyComparisonChart) monthlyComparisonChart.destroy();
+
+            monthlyComparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Monthly Revenue',
+                        data: revenues,
+                        backgroundColor: '#2193b0'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => 'R' + value.toLocaleString()
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Data management
+        function exportData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dental-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (confirm('This will replace all current data. Continue?')) {
+                        appData = imported;
+                        saveData();
+                        location.reload();
+                    }
+                } catch (err) {
+                    alert('Invalid file format');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to delete ALL data? This cannot be undone!')) {
+                if (confirm('Really sure? This will delete everything!')) {
+                    localStorage.removeItem('dentalTrackerData');
+                    location.reload();
+                }
+            }
+        }
+
+        // Initialize app
+        function init() {
+            loadData();
+
+            // Set today's date
+            document.getElementById('entryDate').valueAsDate = new Date();
+
+            updateProcedureDropdown();
+            updateProcedureList();
+            updateDashboard();
+            updateDailyEntry();
+        }
+
+        // Run on load
+        init();
+    </script>
+</body>
+</html>
