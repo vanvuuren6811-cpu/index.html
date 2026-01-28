@@ -878,15 +878,12 @@
             const todayEntries = appData.entries.filter(e => e.date === today);
             const container = document.getElementById('todayEntries');
 
-            if (todayEntries.length === 0) {
-                container.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 20px;">No entries for this date</p>';
-                return;
-            }
+            // Get totals from dailyTotals
+            const dayTotals = appData.dailyTotals[today] || { totalBilled: 0, totalReceived: 0 };
+            const dayTotalBilled = dayTotals.totalBilled;
+            const dayTotalReceived = dayTotals.totalReceived;
 
-            // Calculate totals for the day
-            const dayTotalBilled = todayEntries.reduce((sum, e) => sum + (e.totalBilled || 0), 0);
-            const dayTotalReceived = todayEntries.reduce((sum, e) => sum + (e.totalReceived || 0), 0);
-
+            // Show totals section
             container.innerHTML = `
                 <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
@@ -899,6 +896,15 @@
                     </div>
                 </div>
             `;
+
+            // Show procedure entries if any
+            if (todayEntries.length === 0) {
+                const p = document.createElement('p');
+                p.style.cssText = 'color: #6c757d; text-align: center; padding: 20px;';
+                p.textContent = 'No procedure entries for this date';
+                container.appendChild(p);
+                return;
+            }
             
             todayEntries.forEach(entry => {
                 const div = document.createElement('div');
@@ -906,7 +912,7 @@
                 div.innerHTML = `
                     <div>
                         <strong>${entry.procedure}</strong><br>
-                        <small>Quantity: ${entry.quantity} | Billed: ${formatCurrency(entry.totalBilled || 0)} | Received: ${formatCurrency(entry.totalReceived || 0)}</small>
+                        <small>Quantity: ${entry.quantity}</small>
                     </div>
                     <button class="btn btn-danger" onclick="deleteEntry(${entry.id})">
                         <i class="fas fa-trash"></i>
@@ -1367,8 +1373,10 @@
         function init() {
             loadData();
 
-            // Set today's date
-            document.getElementById('entryDate').valueAsDate = new Date();
+            // Set today's date for both date fields
+            const today = new Date();
+            document.getElementById('entryDate').valueAsDate = today;
+            document.getElementById('totalsDate').valueAsDate = today;
 
             updateProcedureDropdown();
             updateProcedureList();
