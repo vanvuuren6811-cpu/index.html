@@ -406,10 +406,6 @@
                     <h3><i class="fas fa-money-bill-wave"></i> Today's Received</h3>
                     <div class="value" id="todayReceived">R0.00</div>
                 </div>
-                <div class="stat-card purple">
-                    <h3><i class="fas fa-wallet"></i> Today's Earnings (40%)</h3>
-                    <div class="value" id="todayEarnings">R0.00</div>
-                </div>
                 <div class="stat-card orange">
                     <h3><i class="fas fa-chart-line"></i> Monthly Billed</h3>
                     <div class="value" id="monthlyRevenue">R0.00</div>
@@ -417,10 +413,6 @@
                 <div class="stat-card blue">
                     <h3><i class="fas fa-hand-holding-usd"></i> Monthly Received</h3>
                     <div class="value" id="monthlyReceived">R0.00</div>
-                </div>
-                <div class="stat-card purple">
-                    <h3><i class="fas fa-piggy-bank"></i> Monthly Earnings (40%)</h3>
-                    <div class="value" id="monthlyEarnings">R0.00</div>
                 </div>
             </div>
 
@@ -883,26 +875,26 @@
             const dayTotalBilled = dayTotals.totalBilled;
             const dayTotalReceived = dayTotals.totalReceived;
 
-            // Show totals section
-            container.innerHTML = `
-                <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <strong>Total Billed:</strong>
-                        <strong style="color: #2193b0;">${formatCurrency(dayTotalBilled)}</strong>
+            // Show daily totals if they exist
+            if (dayTotalBilled > 0 || dayTotalReceived > 0) {
+                container.innerHTML = `
+                    <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>Total Billed:</strong>
+                            <strong style="color: #2193b0;">${formatCurrency(dayTotalBilled)}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong>Total Received:</strong>
+                            <strong style="color: #28a745;">${formatCurrency(dayTotalReceived)}</strong>
+                        </div>
                     </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <strong>Total Received:</strong>
-                        <strong style="color: #28a745;">${formatCurrency(dayTotalReceived)}</strong>
-                    </div>
-                </div>
-            `;
+                `;
+            } else {
+                container.innerHTML = '';
+            }
 
-            // Show procedure entries if any
             if (todayEntries.length === 0) {
-                const p = document.createElement('p');
-                p.style.cssText = 'color: #6c757d; text-align: center; padding: 20px;';
-                p.textContent = 'No procedure entries for this date';
-                container.appendChild(p);
+                container.innerHTML += '<p style="color: #6c757d; text-align: center; padding: 20px;">No procedure entries for this date</p>';
                 return;
             }
             
@@ -1010,17 +1002,12 @@
                 }
             });
 
-            const todayEarnings = todayBilled * 0.4;
-            const monthlyEarnings = monthlyBilled * 0.4;
-
             document.getElementById('todayRevenue').textContent = formatCurrency(todayBilled);
             document.getElementById('todayReceived').textContent = formatCurrency(todayReceived);
-            document.getElementById('todayEarnings').textContent = formatCurrency(todayEarnings);
             document.getElementById('monthlyRevenue').textContent = formatCurrency(monthlyBilled);
             document.getElementById('monthlyReceived').textContent = formatCurrency(monthlyReceived);
-            document.getElementById('monthlyEarnings').textContent = formatCurrency(monthlyEarnings);
 
-            // Update progress bars (based on 40% of billed amounts)
+            // Update progress bars (based on billed amounts)
             const dailyTarget = appData.monthlyTarget / 22;
             const weeklyTarget = appData.monthlyTarget / 4.33;
 
@@ -1035,14 +1022,9 @@
                 }
             });
 
-            // Calculate 40% of billed amounts for progress
-            const todayEarningsProgress = todayBilled * 0.4;
-            const weeklyEarningsProgress = weeklyBilled * 0.4;
-            const monthlyEarningsProgress = monthlyBilled * 0.4;
-
-            updateProgressBar('dailyProgress', todayEarningsProgress, dailyTarget);
-            updateProgressBar('weeklyProgress', weeklyEarningsProgress, weeklyTarget);
-            updateProgressBar('monthlyProgress', monthlyEarningsProgress, appData.monthlyTarget);
+            updateProgressBar('dailyProgress', todayBilled, dailyTarget);
+            updateProgressBar('weeklyProgress', weeklyBilled, weeklyTarget);
+            updateProgressBar('monthlyProgress', monthlyBilled, appData.monthlyTarget);
 
             document.getElementById('dailyTargetDisplay').textContent = formatCurrency(dailyTarget);
             document.getElementById('weeklyTargetDisplay').textContent = formatCurrency(weeklyTarget);
@@ -1250,7 +1232,7 @@
 
             const profitableMap = {};
             appData.entries.forEach(e => {
-                profitableMap[e.procedure] = (profitableMap[e.procedure] || 0) + e.total;
+                profitableMap[e.procedure] = (profitableMap[e.procedure] || 0) + e.quantity;
             });
             const data = Object.entries(profitableMap).sort((a, b) => b[1] - a[1]);
 
@@ -1261,7 +1243,7 @@
                 data: {
                     labels: data.map(([proc]) => proc),
                     datasets: [{
-                        data: data.map(([, total]) => total),
+                        data: data.map(([, quantity]) => quantity),
                         backgroundColor: [
                             '#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b',
                             '#fa709a', '#fee140', '#30cfd0', '#a8edea', '#fed6e3'
@@ -1373,15 +1355,16 @@
         function init() {
             loadData();
 
-            // Set today's date for both date fields
-            const today = new Date();
-            document.getElementById('entryDate').valueAsDate = today;
-            document.getElementById('totalsDate').valueAsDate = today;
+            // Set today's date
+            document.getElementById('entryDate').valueAsDate = new Date();
+            document.getElementById('totalsDate').valueAsDate = new Date();
 
             updateProcedureDropdown();
             updateProcedureList();
             updateDashboard();
             updateDailyEntry();
+            updateTargets();
+            updateStatistics();
         }
 
         // Run on load
