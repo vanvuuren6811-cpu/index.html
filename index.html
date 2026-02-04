@@ -407,12 +407,20 @@
                     <div class="value" id="todayReceived">R0.00</div>
                 </div>
                 <div class="stat-card orange">
+                    <h3><i class="fas fa-wallet"></i> Today's Earnings (40%)</h3>
+                    <div class="value" id="todayEarnings">R0.00</div>
+                </div>
+                <div class="stat-card blue">
                     <h3><i class="fas fa-chart-line"></i> Monthly Billed</h3>
                     <div class="value" id="monthlyRevenue">R0.00</div>
                 </div>
-                <div class="stat-card blue">
+                <div class="stat-card green">
                     <h3><i class="fas fa-hand-holding-usd"></i> Monthly Received</h3>
                     <div class="value" id="monthlyReceived">R0.00</div>
+                </div>
+                <div class="stat-card orange">
+                    <h3><i class="fas fa-piggy-bank"></i> Monthly Earnings (40%)</h3>
+                    <div class="value" id="monthlyEarnings">R0.00</div>
                 </div>
             </div>
 
@@ -1002,10 +1010,16 @@
                 }
             });
 
+            // Calculate earnings (40% of received)
+            const todayEarnings = todayReceived * 0.4;
+            const monthlyEarnings = monthlyReceived * 0.4;
+
             document.getElementById('todayRevenue').textContent = formatCurrency(todayBilled);
             document.getElementById('todayReceived').textContent = formatCurrency(todayReceived);
+            document.getElementById('todayEarnings').textContent = formatCurrency(todayEarnings);
             document.getElementById('monthlyRevenue').textContent = formatCurrency(monthlyBilled);
             document.getElementById('monthlyReceived').textContent = formatCurrency(monthlyReceived);
+            document.getElementById('monthlyEarnings').textContent = formatCurrency(monthlyEarnings);
 
             // Update progress bars (based on billed amounts)
             const dailyTarget = appData.monthlyTarget / 22;
